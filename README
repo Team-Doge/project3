@@ -1,3 +1,16 @@
-Mich and Josh' awesome DNS project.
-This README will be edited once we actually start working on it.  
-YEAH.
+The DNS project is for Systems and Networks at Northeastern University.
+
+The project can be run by typing
+./3600dns [-mx|-ns] @IP[:PORT] NAME
+
+-mx     Optional    Look up mail server records
+-ns     Optional    Look up name server records
+IP      Required    The IP of the DNS server
+PORT    Optional    The port number to connect on
+NAME    Required    The name to look up
+
+
+This project is entirely coded in C, and uses some starter code provided by
+the professor, Alan Mislove. Each packet is manually constructed, with bits
+manually set in the header and then broadcast over the network. Each response
+is invididually looked at and broken apart to provide results to the user.
