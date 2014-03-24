@@ -172,17 +172,17 @@ int main(int argc, char *argv[]) {
 	dump_packet(packet, packet_size);
 
 	// send the DNS request (and call dump_packet with your request)
-	/*
+	
 	// first, open a UDP socket  
 	int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 	// next, construct the destination address
 	struct sockaddr_in out;
 	out.sin_family = AF_INET;
-	out.sin_port = htons(<<DNS server port number, as short>>);
-	out.sin_addr.s_addr = inet_addr(<<DNS server IP as char*>>);
+	out.sin_port = htons(port);
+	out.sin_addr.s_addr = inet_addr(ip);
 
-	if (sendto(sock, <<your packet>>, <<packet len>>, 0, &out, sizeof(out)) < 0) {
+	if (sendto(sock, packet, packet_size, 0, &out, sizeof(out)) < 0) {
 		// an error occurred
 	}
 
@@ -197,19 +197,25 @@ int main(int argc, char *argv[]) {
 
 	// construct the timeout
 	struct timeval t;
-	t.tv_sec = <<your timeout in seconds>>;
+	t.tv_sec = 5;
 	t.tv_usec = 0;
 
+	unsigned int input_size = 65535;
+	char *input = (char *) calloc(input_size, sizeof(char));
 	// wait to receive, or for a timeout
 	if (select(sock + 1, &socks, NULL, NULL, &t)) {
-		if (recvfrom(sock, <<your input buffer>>, <<input len>>, 0, &in, &in_len) < 0) {
+		if (recvfrom(sock, input, input_size, 0, &in, &in_len) < 0) {
 			// an error occured
+			error("Error occurred. :(\n");
+			return -1;
 		}
 	} else {
 		// a timeout occurred
+		error("Timeout occurred.\n");
+		return -2;
 	}
 
 	// print out the result
-	*/	
+	dump_packet(input, input_size);	
 	return 0;
 }
