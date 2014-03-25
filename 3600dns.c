@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
 	lookup[position] = (char) 0;
 	q.qname = lookup;
-	//debug_question(&q);
+	debug_question(&q);
 	
 	int packet_size = sizeof(head) + strlen(lookup) + 1 + sizeof(q.qtype) + sizeof(q.qclass);
 	char *packet = (char *) malloc(packet_size);
@@ -217,6 +217,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	// print out the result
-	dump_packet(input, input_size);	
+	ans_header ans_h;
+	extract_header(input, &ans_h);
+	debug_ans_header(&ans_h);
+	
+	question ans_q;
+	extract_question(input + sizeof(ans_h), &ans_q, lookup);
+	debug_question(&ans_q);
+
+	answer ans;
+	extract_answer(input + sizeof(ans_h) + sizeof(int) + strlen(lookup) + 1, &ans, lookup);
+	debug_answer(&ans);
+	//dump_packet(input, input_size);	
 	return 0;
 }

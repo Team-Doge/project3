@@ -36,6 +36,24 @@ void debug_header(header *h) {
 	debug("\tARCOUNT:\t%d\n", h->arcount);
 }
 
+void debug_ans_header(ans_header *h);
+void debug_ans_header(ans_header *h) {
+	debug("\n\nDumping header information.\n");
+	debug("\tID:\t\t%d\n", h->id);
+	debug("\tQR:\t\t%d\n", h->qr);
+	debug("\tOPCODE:\t\t%d\n", h->opcode);
+	debug("\tAA:\t\t%d\n", h->aa);
+	debug("\tTC:\t\t%d\n", h->tc);
+	debug("\tRD:\t\t%d\n", h->rd);
+	debug("\tRA:\t\t%d\n", h->ra);
+	debug("\tZ:\t\t%d\n", h->z);
+	debug("\tRCODE:\t\t%d\n", h->rcode);
+	debug("\tQDCOUNT:\t%d\n", h->qdcount);
+	debug("\tANCOUNT:\t%d\n", h->ancount);
+	debug("\tNSCOUNT:\t%d\n", h->nscount);
+	debug("\tARCOUNT:\t%d\n", h->arcount);
+}
+
 void debug_question(question *q);
 void debug_question(question *q) {
 	debug("\n\nDumping question information.\n");
@@ -43,6 +61,17 @@ void debug_question(question *q) {
 	debug("\tQTYPE:\t\t%d\n", q->qtype);
 	debug("\tQCLASS:\t\t%d\n", q->qclass);
 }
+
+void debug_answer(answer *ans);
+void debug_answer(answer *ans) {
+	debug("\n\nDumping answer information.\n");
+	debug("\tNAME:\t\t%s\n", ans->name);
+	debug("\tTYPE:\t\t%d\n", ans->type);
+	debug("\tCLASS:\t\t%d\n", ans->class);
+	debug("\tTTL:\t\t%d\n", ans->ttl);
+	debug("\tRDLENGTH:\t%d\n", ans->rdlength);
+}
+
 
 
 #endif
