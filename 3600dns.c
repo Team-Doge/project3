@@ -180,10 +180,11 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in out;
 	out.sin_family = AF_INET;
 	out.sin_port = htons(port);
-	out.sin_addr.s_addr = inet_addr(ip);
+	out.sin_addr.s_addr = inet_addr(ip + 1);
 
 	if (sendto(sock, packet, packet_size, 0, &out, sizeof(out)) < 0) {
 		// an error occurred
+		error("Error has occurred sending the packet.\n");
 	}
 
 	// wait for the DNS reply (timeout: 5 seconds)
