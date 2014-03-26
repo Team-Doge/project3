@@ -36,50 +36,50 @@
  * size - The length of your packet
  */
 static void dump_packet(unsigned char *data, int size) {
-		unsigned char *p = data;
-		unsigned char c;
-		int n;
-		char bytestr[4] = {0};
-		char addrstr[10] = {0};
-		char hexstr[ 16*3 + 5] = {0};
-		char charstr[16*1 + 5] = {0};
-		for(n=1;n<=size;n++) {
-				if (n%16 == 1) {
-						/* store address for this line */
-						snprintf(addrstr, sizeof(addrstr), "%.4x",
-							 ((unsigned int)p-(unsigned int)data) );
-				}
-						
-				c = *p;
-				if (isprint(c) == 0) {
-						c = '.';
-				}
+	unsigned char *p = data;
+	unsigned char c;
+	int n;
+	char bytestr[4] = {0};
+	char addrstr[10] = {0};
+	char hexstr[ 16*3 + 5] = {0};
+	char charstr[16*1 + 5] = {0};
+	for(n=1;n<=size;n++) {
+			if (n%16 == 1) {
+					/* store address for this line */
+					snprintf(addrstr, sizeof(addrstr), "%.4x",
+						 ((unsigned int)p-(unsigned int)data) );
+			}
+					
+			c = *p;
+			if (isprint(c) == 0) {
+					c = '.';
+			}
 
-				/* store hex str (for left side) */
-				snprintf(bytestr, sizeof(bytestr), "%02X ", *p);
-				strncat(hexstr, bytestr, sizeof(hexstr)-strlen(hexstr)-1);
+			/* store hex str (for left side) */
+			snprintf(bytestr, sizeof(bytestr), "%02X ", *p);
+			strncat(hexstr, bytestr, sizeof(hexstr)-strlen(hexstr)-1);
 
-				/* store char str (for right side) */
-				snprintf(bytestr, sizeof(bytestr), "%c", c);
-				strncat(charstr, bytestr, sizeof(charstr)-strlen(charstr)-1);
+			/* store char str (for right side) */
+			snprintf(bytestr, sizeof(bytestr), "%c", c);
+			strncat(charstr, bytestr, sizeof(charstr)-strlen(charstr)-1);
 
-				if(n%16 == 0) { 
-						/* line completed */
-						printf("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
-						hexstr[0] = 0;
-						charstr[0] = 0;
-				} else if(n%8 == 0) {
-						/* half line: add whitespaces */
-						strncat(hexstr, "  ", sizeof(hexstr)-strlen(hexstr)-1);
-						strncat(charstr, " ", sizeof(charstr)-strlen(charstr)-1);
-				}
-				p++; /* next byte */
-		}
+			if(n%16 == 0) { 
+					/* line completed */
+					printf("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
+					hexstr[0] = 0;
+					charstr[0] = 0;
+			} else if(n%8 == 0) {
+					/* half line: add whitespaces */
+					strncat(hexstr, "  ", sizeof(hexstr)-strlen(hexstr)-1);
+					strncat(charstr, " ", sizeof(charstr)-strlen(charstr)-1);
+			}
+			p++; /* next byte */
+	}
 
-		if (strlen(hexstr) > 0) {
-				/* print rest of buffer if not empty */
-				printf("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
-		}
+	if (strlen(hexstr) > 0) {
+			/* print rest of buffer if not empty */
+			printf("[%4.4s]   %-50.50s  %s\n", addrstr, hexstr, charstr);
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
 	lookup[position] = (char) 0;
 	q.qname = lookup;
-	debug_question(&q);
+	//debug_question(&q);
 	
 	int packet_size = sizeof(head) + strlen(lookup) + 1 + sizeof(q.qtype) + sizeof(q.qclass);
 	char *packet = (char *) malloc(packet_size);
@@ -207,28 +207,57 @@ int main(int argc, char *argv[]) {
 	if (select(sock + 1, &socks, NULL, NULL, &t)) {
 		if (recvfrom(sock, input, input_size, 0, &in, &in_len) < 0) {
 			// an error occured
-			error("Error occurred. :(\n");
+			error("ERROR\tAn error occurred connecting.\n");
 			return -1;
 		}
 	} else {
 		// a timeout occurred
-		error("Timeout occurred.\n");
-		return -2;
+		printf("NORESPONSE\n");
+		return 0;
 	}
 
 	// print out the result
-	ans_header ans_h;
-	dump_packet(input, 500);
+	header ans_h;
+	//dump_packet(input, 500);
 	extract_header(input, &ans_h);
-	debug_ans_header(&ans_h);
-	
+	//debug_header(&ans_h);
+	switch (ans_h.rcode) {
+		case 0:
+			break;
+		case 1:
+			error("ERROR\tFormat Error: The name server was unable to interpret the query.\n");
+			return 1;
+		case 2:
+			error("ERROR\tServer Failure: The name server was unable to process this query due to a problem with the name server.\n");
+			return 2;
+		case 3:
+			printf("NOTFOUND\n");
+			return 3;
+		case 4:
+			error("ERROR\tNot Implemented: The name server does not support the requested kind of query.\n");
+			return 4;
+		case 5:
+			error("ERROR\tRefused: The name server refuses to perform the specified operation for policy reasons.\n");
+			return 5;
+		default:
+			error("ERROR\tAn unknown error occurred.\n");
+			return -1;
+	}
+
 	question ans_q;
 	extract_question(input + sizeof(ans_h), &ans_q, lookup);
-	debug_question(&ans_q);
+	//debug_question(&ans_q);
 
-	answer ans;
-	extract_answer(input, &ans, lookup, sizeof(ans_h) + sizeof(int) + strlen(lookup) + 1);
-	debug_answer(&ans);
-	//dump_packet(input, input_size);	
-	return 0;
+	// debug_answer(&ans);
+
+	int input_pos = 0;
+	input_pos += sizeof(ans_h);
+	input_pos += sizeof(int) + strlen(lookup) + 1;
+	for (int i = 0; i < ans_h.ancount; i++) {
+		answer ans;
+		int name_offset = extract_answer(input, &ans, lookup, input_pos);
+		input_pos += name_offset + ans.rdlength + 10;
+		print_ans(&ans_h, &ans, input);
+	}
+	return 0;	
 }

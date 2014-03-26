@@ -14,3 +14,11 @@ This project is entirely coded in C, and uses some starter code provided by
 the professor, Alan Mislove. Each packet is manually constructed, with bits
 manually set in the header and then broadcast over the network. Each response
 is invididually looked at and broken apart to provide results to the user.
+
+
+Things to include in our README before we submit:
+1. Describe our high-level approach
+2. Challenges we faced
+3. List of properties/features of our design that we thought was good
+4. Overview of how we tested our code
+

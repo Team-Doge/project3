@@ -10,6 +10,9 @@
 #include "debug.h"
 #include "datatypes.h"
 
+void extract_alias(unsigned char *data, char *buf, unsigned short length, char *response);
+void extract_ip(unsigned char *data, char *buf, unsigned short length);
+
 bool create_packet(header *h, question *q, int name_size, char *packet);
 bool create_packet(header *h, question *q, int name_size, char *packet) {
 	char *pos = packet;
@@ -28,9 +31,9 @@ bool create_packet(header *h, question *q, int name_size, char *packet) {
 	return true;
 }
 
-void extract_header(char *response, ans_header *h);
-void extract_header(char *response, ans_header *h) {
-	memcpy(h, response, sizeof(ans_header));
+void extract_header(char *response, header *h);
+void extract_header(char *response, header *h) {
+	memcpy(h, response, sizeof(header));
 	h->id = ntohs(h->id);
 	h->qdcount = ntohs(h->qdcount);
 	h->ancount = ntohs(h->ancount);
@@ -52,8 +55,8 @@ void extract_question(char *response, question *q, char *query) {
 	q->qclass = ntohs(q->qclass);
 }
 int extract_name(char *response, int ans_offset, char *buf);
-void extract_answer(char *response, answer *ans, char *query, int ans_offset);
-void extract_answer(char *response, answer *ans, char *query, int ans_offset) {
+int extract_answer(char *response, answer *ans, char *query, int ans_offset);
+int extract_answer(char *response, answer *ans, char *query, int ans_offset) {
 	char *curr_pos = response + ans_offset;
 	unsigned int initial_buf_size = 100;
 	char *buf = (char *) calloc(initial_buf_size, sizeof(char));
@@ -78,6 +81,7 @@ void extract_answer(char *response, answer *ans, char *query, int ans_offset) {
 	curr_pos += sizeof(short);
 
 	ans->rdata = curr_pos;
+	return name_offset;
 }
 
 int extract_name(char *response, int ans_offset, char *buf) {
@@ -103,6 +107,70 @@ int extract_name(char *response, int ans_offset, char *buf) {
 		c = response[ans_offset];
 	}
 	return curr_buf_size;
+}
+
+int print_ans(header *h, answer *ans, char *response);
+int print_ans(header *h, answer *ans, char *response) {
+	char *auth = h->aa ? "auth" : "nonauth";
+	if (ans->type == 1) {
+		// A Record
+		char *buf = (char *) calloc(16, sizeof(char));
+		extract_ip(ans->rdata, buf, ans->rdlength);
+		printf("IP\t%s\t%s\n", buf, auth);
+	} else if (ans->type == 5) {
+		// CNAME
+		char *buf = (char *) calloc(100, sizeof(char));
+		extract_alias(ans->rdata, buf, ans->rdlength, response);
+		printf("CNAME\t%s\t%s\n", buf + 1, auth);
+	} else if (ans->type == 2) {
+		// Name Server
+		return -1;
+	} else if (ans->type == 8) {
+		// Mail Server
+		return -1;
+	} else {
+		// Unknown type
+		error("ERROR\tUnknown answer type.\n");
+		return -1;
+	}
+	
+	return 0;
+}
+
+void extract_ip(unsigned char *data, char *buf, unsigned short length) {
+	int buf_pos = 0;
+	for (int i = 0; i < length; i++) {
+		sprintf(buf + buf_pos, "%u.", data[i]);
+		buf_pos = strlen(buf);
+	}
+	buf[buf_pos-1] = '\0'; 
+}
+
+void extract_alias(unsigned char *data, char *buf, unsigned short length, char *response) {
+	int buf_pos = 0;
+	for (int i = 0; i < length; i++) {
+		unsigned short p_len = data[i];
+
+		if (p_len >= 192) {
+			unsigned short offset = ((data[i] & 63) << 8) | data[i + 1];
+			unsigned short length = strlen(&response[offset]);
+			memcpy(&buf[buf_pos], &response[offset], length + 1);
+			for (int j = 0; j < length; j++) {
+				unsigned short p = buf[buf_pos + j];
+				buf[buf_pos + j] = '.';
+				j += p;
+			}
+			return;
+		}
+		buf[buf_pos] = '.';		
+		buf_pos++;
+		for (int j = 0; j < p_len; j++) {
+			buf[buf_pos] = data[j + i + 1];
+			buf_pos++;
+		}
+		i += p_len;
+	}
+	buf[buf_pos-1] = '\0';
 }
 
 #endif
