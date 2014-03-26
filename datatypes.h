@@ -41,7 +41,7 @@ typedef struct header_t {
  * @param qclass    The number specifiying the the class of the query
  */
 typedef struct question_t {
-	char *qname;
+	unsigned char *qname;
 	unsigned short qtype;
 	unsigned short qclass;
 } question;
@@ -61,8 +61,8 @@ typedef struct answer_t {
 	unsigned short class;
 	unsigned int ttl;
 	unsigned short rdlength;
-	char *rdata;
-	char *name;
+	unsigned char *rdata;
+	unsigned char *name;
 } answer;
 
 #endif

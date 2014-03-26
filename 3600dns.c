@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 
 #include "3600dns.h"
-
+#include "extraction.h"
 
 /**
  * This function will print a hex dump of the provided packet to the screen
@@ -163,12 +163,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	lookup[position] = (char) 0;
-	q.qname = lookup;
+	q.qname = (unsigned char *) lookup;
 	//debug_question(&q);
 	
 	int packet_size = sizeof(head) + strlen(lookup) + 1 + sizeof(q.qtype) + sizeof(q.qclass);
-	char *packet = (char *) malloc(packet_size);
-	bool created = create_packet(&head, &q, strlen(lookup) + 1, packet);
+	unsigned char *packet = (unsigned char *) malloc(packet_size);
+	create_packet(&head, &q, strlen(lookup) + 1, packet);
 	dump_packet(packet, packet_size);
 
 	// send the DNS request (and call dump_packet with your request)
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
 	t.tv_usec = 0;
 
 	unsigned int input_size = 65535;
-	char *input = (char *) calloc(input_size, sizeof(char));
+	unsigned char *input = (unsigned char *) calloc(input_size, sizeof(char));
 	// wait to receive, or for a timeout
 	if (select(sock + 1, &socks, NULL, NULL, &t)) {
 		if (recvfrom(sock, input, input_size, 0, &in, &in_len) < 0) {
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	question ans_q;
-	extract_question(input + sizeof(ans_h), &ans_q, lookup);
+	extract_question( input + sizeof(ans_h), &ans_q, lookup);
 	//debug_question(&ans_q);
 
 	// debug_answer(&ans);
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
 	input_pos += sizeof(int) + strlen(lookup) + 1;
 	for (int i = 0; i < ans_h.ancount; i++) {
 		answer ans;
-		int name_offset = extract_answer(input, &ans, lookup, input_pos);
+		int name_offset = extract_answer(input, &ans, input_pos);
 		input_pos += name_offset + ans.rdlength + 10;
 		print_ans(&ans_h, &ans, input);
 	}
