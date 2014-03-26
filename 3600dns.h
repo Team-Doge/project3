@@ -51,12 +51,15 @@ void extract_question(char *response, question *q, char *query) {
 	memcpy(&q->qclass, curr_pos, sizeof(short));
 	q->qclass = ntohs(q->qclass);
 }
-
-void extract_answer(char *response, answer *ans, char *query);
-void extract_answer(char *response, answer *ans, char *query) {
-	char *curr_pos = response;
-	ans->name = curr_pos;
-	curr_pos += strlen(query) + 1;
+int extract_name(char *response, int ans_offset, char *buf);
+void extract_answer(char *response, answer *ans, char *query, int ans_offset);
+void extract_answer(char *response, answer *ans, char *query, int ans_offset) {
+	char *curr_pos = response + ans_offset;
+	unsigned int initial_buf_size = 100;
+	char *buf = (char *) calloc(initial_buf_size, sizeof(char));
+	int name_offset = extract_name(response, ans_offset, buf);
+	ans->name = buf;
+	curr_pos += name_offset;
 
 	memcpy(&ans->type, curr_pos, sizeof(short));
 	ans->type = ntohs(ans->type);
@@ -75,6 +78,31 @@ void extract_answer(char *response, answer *ans, char *query) {
 	curr_pos += sizeof(short);
 
 	ans->rdata = curr_pos;
+}
+
+int extract_name(char *response, int ans_offset, char *buf) {
+	char *buf_pos = buf;
+	int curr_buf_size = 0;
+
+	unsigned char c = response[ans_offset];
+	while (c != '\0') {
+		unsigned short c_val = (unsigned short) c;
+		if (c_val >= 192) {
+			unsigned char c2 = response[ans_offset + 1];
+			unsigned short offset = ((c_val & 63) << 8) | (unsigned short) c2;
+			unsigned short length = strlen(&response[offset]);
+			memcpy(buf_pos, &response[offset], length + 1);
+			curr_buf_size += 2;
+			break;
+		} else {
+			memcpy(buf_pos, &response[ans_offset], c_val + 1);
+			ans_offset += c_val + 1;
+			buf_pos += c_val;
+			curr_buf_size += c_val + 1;
+		}
+		c = response[ans_offset];
+	}
+	return curr_buf_size;
 }
 
 #endif

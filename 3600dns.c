@@ -218,6 +218,7 @@ int main(int argc, char *argv[]) {
 
 	// print out the result
 	ans_header ans_h;
+	dump_packet(input, 500);
 	extract_header(input, &ans_h);
 	debug_ans_header(&ans_h);
 	
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
 	debug_question(&ans_q);
 
 	answer ans;
-	extract_answer(input + sizeof(ans_h) + sizeof(int) + strlen(lookup) + 1, &ans, lookup);
+	extract_answer(input, &ans, lookup, sizeof(ans_h) + sizeof(int) + strlen(lookup) + 1);
 	debug_answer(&ans);
 	//dump_packet(input, input_size);	
 	return 0;
