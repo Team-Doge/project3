@@ -16,9 +16,15 @@ manually set in the header and then broadcast over the network. Each response
 is invididually looked at and broken apart to provide results to the user.
 
 
-Things to include in our README before we submit:
-1. Describe our high-level approach
-2. Challenges we faced
-3. List of properties/features of our design that we thought was good
-4. Overview of how we tested our code
+We began our approach by building packets up manually, by setting everything in the header and the
+question ourselves. This was the simplest part. After getting a response, we took the different 
+tasks of reading the header and answers and broke them into several different pieces. Our biggest
+challenge was making sure we were getting the right offset in the data when dealing with mulitple
+answers, and dealing with packet compression.
 
+Overall, the part we like the most is separating the concerns, and having separate files for 
+validation, extraction, etc. Having helper functions and breaking things down into smaller pieces
+really made things easier to deal with.
+
+We tested our code thoroughly by running it with many different examples and testing out what we
+knew were good and bad domains/IPs. 
