@@ -47,9 +47,12 @@ int print_ans(header *h, answer *ans, unsigned char *response) {
 		char *buf = (char *) calloc(1000, sizeof(char));
 		extract_alias(ans->rdata, buf, ans->rdlength, response);
 		printf("NS\t%s\t%s\n", buf + 1, auth);
-		return -1;
 	} else if (ans->type == 8) {
 		// Mail Server
+		char *buf = (char *) calloc(1000, sizeof(char));
+		unsigned int preference = 0;
+		extract_mail_server(ans->rdata, buf, &preference, ans->rdlength, response);
+		printf("MX\t%s\t%d\t%s", buf + 1, preference, auth);
 		return -1;
 	} else {
 		// Unknown type
