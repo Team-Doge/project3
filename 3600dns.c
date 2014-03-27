@@ -157,9 +157,14 @@ int main(int argc, char *argv[]) {
 	//debug_header(&head);
 
 	question q;
-	// TODO:  Fix for extra credit for mx and ns records
-	q.qtype = htons(0x001);
 	q.qclass = htons(0x001);
+	if (is_ns) {
+		q.qtype = htons(0x002);
+	} else (is_mx) {
+		q.qtype = htons(0x00f);
+	} else {
+		q.qtype = htons(0x001);
+	}
 
 	char *name_copy = (char *) malloc(strlen(name));
 	strcpy(name_copy, name);

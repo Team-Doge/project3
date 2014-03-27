@@ -11,7 +11,7 @@
 #include "datatypes.h"
 #include "extraction.h"
 #include "validation.h"
- 
+
 void create_packet(header *h, question *q, int name_size, unsigned char *packet);
 int print_ans(header *h, answer *ans, unsigned char *response);
 
@@ -39,11 +39,14 @@ int print_ans(header *h, answer *ans, unsigned char *response) {
 		printf("IP\t%s\t%s\n", buf, auth);
 	} else if (ans->type == 5) {
 		// CNAME
-		char *buf = (char *) calloc(100, sizeof(char));
+		char *buf = (char *) calloc(1000, sizeof(char));
 		extract_alias(ans->rdata, buf, ans->rdlength, response);
 		printf("CNAME\t%s\t%s\n", buf + 1, auth);
 	} else if (ans->type == 2) {
 		// Name Server
+		char *buf = (char *) calloc(1000, sizeof(char));
+		extract_alias(ans->rdata, buf, ans->rdlength, response);
+		printf("NS\t%s\t%s\n", buf + 1, auth);
 		return -1;
 	} else if (ans->type == 8) {
 		// Mail Server
