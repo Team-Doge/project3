@@ -141,7 +141,7 @@ void extract_alias(unsigned char *data, char *buf, unsigned short length, unsign
 
 		if (p_len >= 192) {
 			unsigned short offset = ((data[i] & 63) << 8) | data[i + 1];
-			unsigned short length = strlen(&response[offset]);
+			unsigned short length = strlen((char *) &response[offset]);
 			memcpy(&buf[buf_pos], &response[offset], length + 1);
 			for (int j = 0; j < length; j++) {
 				unsigned short p = buf[buf_pos + j];

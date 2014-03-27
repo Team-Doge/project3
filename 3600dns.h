@@ -10,7 +10,8 @@
 #include "debug.h"
 #include "datatypes.h"
 #include "extraction.h"
-
+#include "validation.h"
+ 
 void create_packet(header *h, question *q, int name_size, unsigned char *packet);
 int print_ans(header *h, answer *ans, unsigned char *response);
 

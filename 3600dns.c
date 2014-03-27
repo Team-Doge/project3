@@ -90,10 +90,12 @@ int main(int argc, char *argv[]) {
 	 * get you started.
 	 */
 	if (!(argc == 3 || argc == 4)) {
-		error("Incorrect number of arguments given.\n\nExpected format:\n./3600dns [-ns|-mx] @<server:port> <name>\n");
+		error("ERROR\tIncorrect number of arguments given.\nExpected format:\t./3600dns [-ns|-mx] @<server:port> <name>\n");
 		return -1;
 	}
 	// process the arguments
+	bool is_mx = false;
+	bool is_ns = false;
 	char *ip_addr, *name;
 	int port = 53;
 	switch (argv[1][0]) {
@@ -102,8 +104,17 @@ int main(int argc, char *argv[]) {
 			ip_addr = argv[1];
 			name = argv[2];
 			break;
-		case '-':
+		case '-':;
 			// some flag
+			char *flag = argv[1];
+			if (strcmp(flag, "-mx") == 0) {
+				is_mx = true;
+			} else if (strcmp(flag, "-ns") == 0) {
+				is_ns = true;
+			} else {
+				error("ERROR\tUnknown flag given.\nExpected format:\t./3600dns [-ns|-mx] @<server:port> <name>\n");
+				return -1;
+			}
 			ip_addr = argv[2];
 			name = argv[3];
 			break;
@@ -114,6 +125,13 @@ int main(int argc, char *argv[]) {
 
 	char *ip_addr_copy = (char *) malloc(strlen(ip_addr));
 	strcpy(ip_addr_copy, ip_addr);
+
+	// Validate the IP Address
+	bool valid = validate_ip(ip_addr+1);
+	if (!valid) {
+		return -1;
+	}
+
 	char *ip = strtok(ip_addr_copy, ":");
 	char *port_str = strtok(NULL, ":");
 
