@@ -161,10 +161,10 @@ void extract_alias(unsigned char *data, char *buf, unsigned short length, unsign
 	buf[buf_pos-1] = '\0';
 }
 
-void extract_mail_server(unsigned char *data, char *buf, unsigned int *preference, unsigned short length, unsigned char *response) {
+void extract_mail_server(unsigned char *data, char *buf, unsigned short *preference, unsigned short length, unsigned char *response) {
 	int buf_pos = 0;
-	memcpy(preference, &data[buf_pos], 2);
-	buf_pos += 2;
+	memcpy(preference, &data[buf_pos], sizeof(short));
+    data += sizeof(short);
 	for (int i = 0; i < length; i++) {
 		unsigned short p_len = data[i];
 

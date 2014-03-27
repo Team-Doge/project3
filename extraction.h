@@ -64,6 +64,6 @@ void extract_ip(unsigned char *data, char *buf, unsigned short length);
  */
 void extract_alias(unsigned char *data, char *buf, unsigned short length, unsigned char *response);
 
-void extract_mail_server(unsigned char *data, char *buf, unsigned int *preference, unsigned short length, unsigned char *response);
+void extract_mail_server(unsigned char *data, char *buf, unsigned short *preference, unsigned short length, unsigned char *response);
 
 #endif
