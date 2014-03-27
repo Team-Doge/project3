@@ -160,3 +160,32 @@ void extract_alias(unsigned char *data, char *buf, unsigned short length, unsign
 	}
 	buf[buf_pos-1] = '\0';
 }
+
+void extract_mail_server(unsigned char *data, char *buf, unsigned int *preference, unsigned short length, unsigned char *response) {
+	int buf_pos = 0;
+	memcpy(preference, &data[buf_pos], 2);
+	buf_pos += 2;
+	for (int i = 0; i < length; i++) {
+		unsigned short p_len = data[i];
+
+		if (p_len >= 192) {
+			unsigned short offset = ((data[i] & 63) << 8) | data[i + 1];
+			unsigned short length = strlen((char *) &response[offset]);
+			memcpy(&buf[buf_pos], &response[offset], length + 1);
+			for (int j = 0; j < length; j++) {
+				unsigned short p = buf[buf_pos + j];
+				buf[buf_pos + j] = '.';
+				j += p;
+			}
+			return;
+		}
+		buf[buf_pos] = '.';		
+		buf_pos++;
+		for (int j = 0; j < p_len; j++) {
+			buf[buf_pos] = data[j + i + 1];
+			buf_pos++;
+		}
+		i += p_len;
+	}
+	buf[buf_pos-1] = '\0';
+}
