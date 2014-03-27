@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
 	q.qclass = htons(0x001);
 	if (is_ns) {
 		q.qtype = htons(0x002);
-	} else (is_mx) {
+	} else if (is_mx) {
 		q.qtype = htons(0x00f);
 	} else {
 		q.qtype = htons(0x001);
